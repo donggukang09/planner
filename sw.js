@@ -1,13 +1,6 @@
-// 업무 플래너 Service Worker — v3
-// HTML은 네트워크 우선(최신 보장), 정적 자원은 캐시 우선
-const CACHE = 'planner-v3';
-const ASSETS = [
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  './favicon.png'
-];
+// 업무 플래너 Service Worker — v4
+const CACHE = 'planner-v4';
+const ASSETS = ['./index.html','./manifest.json','./icon-192.png','./icon-512.png','./favicon.png'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -23,28 +16,24 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET') return;
+  if (req.method !== 'GET') return;                       // 쓰기(POST)는 건드리지 않음
   const url = new URL(req.url);
-  // 구글/외부 API 요청은 항상 네트워크
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== self.location.origin) return;        // 구글 등 외부 요청은 그대로 통과
 
-  const isHTML = req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html');
+  const isHTML = req.mode === 'navigate' || (req.headers.get('accept')||'').includes('text/html');
   if (isHTML) {
-    // 네트워크 우선, 실패 시 캐시
     e.respondWith(
-      fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+      fetch(req)
+        .then(res => { const c = res.clone(); caches.open(CACHE).then(ch => ch.put(req, c)); return res; })
+        .catch(() => caches.match(req).then(r => r || caches.match('./index.html')).then(r => r || new Response('오프라인', {status:503, headers:{'Content-Type':'text/plain; charset=utf-8'}})))
     );
   } else {
-    // 캐시 우선
-    e.respondWith(caches.match(req).then(r => r || fetch(req)));
+    e.respondWith(
+      caches.match(req).then(r => r || fetch(req).catch(() => new Response('', {status:503})))
+    );
   }
 });
 
-// 알림 클릭 시 앱 포커스
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(clients.matchAll({type:'window'}).then(list => {
