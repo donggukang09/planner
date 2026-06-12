@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#14110d">
+<meta name="theme-color" content="#eef0ec">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="플래너">
 <title>업무 플래너</title>
 <link rel="manifest" href="manifest.json">
@@ -17,14 +17,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400&family=Noto+Sans+KR:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#14110d;--ink-2:#1c1813;--panel:#221d16;--panel-2:#2a241b;
-    --line:#3a3225;--line-soft:#2e2820;
-    --text:#ece4d4;--text-dim:#a89b82;--text-faint:#6f6553;
-    --gold:#e0b252;--gold-soft:#caa052;
-    --high:#e07a5f;--mid:#e0b252;--low:#83a06e;
-    --od:#ef5d47;          /* 지연 */
-    --soon:#6ea2c4;        /* 예정 */
-    --done:#83a06e;        /* 완료 */
+    --ink:#eef0ec;--ink-2:#f6f7f4;--panel:#ffffff;--panel-2:#f1f3ef;
+    --line:#d7d9d3;--line-soft:#e6e7e2;
+    --text:#2b2f29;--text-dim:#6c7268;--text-faint:#9aa094;
+    --gold:#b8902f;--gold-soft:#a07d28;
+    --high:#d26a3f;--mid:#cf972a;--low:#5a9a4a;
+    --od:#d8542f;          /* 지연 */
+    --soon:#4f7fb5;        /* 예정 */
+    --done:#5a9a4a;        /* 완료 */
     --maxw:460px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -32,9 +32,9 @@
   body{
     font-family:'Noto Sans KR',sans-serif;background:var(--ink);color:var(--text);line-height:1.5;
     display:flex;justify-content:center;
-    background-image:radial-gradient(900px 500px at 80% -10%, rgba(224,178,82,.07), transparent 60%),radial-gradient(700px 400px at -10% 110%, rgba(131,160,110,.05), transparent 60%);
+    background-image:radial-gradient(900px 500px at 80% -10%, rgba(184,144,47,.05), transparent 60%),radial-gradient(700px 400px at -10% 110%, rgba(90,154,74,.04), transparent 60%);
   }
-  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.018;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 
   .app{width:100%;max-width:var(--maxw);min-height:100vh;display:flex;flex-direction:column;
     background:var(--ink);border-left:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
@@ -71,7 +71,7 @@
   .cell:active{transform:scale(.92)}
   .cell.muted{background:transparent;border-color:transparent;cursor:default;opacity:.3}
   .cell .n{font-family:'Fraunces',serif;font-size:13px;color:var(--text-dim);line-height:1}
-  .cell.today{border-color:var(--gold);background:linear-gradient(180deg,rgba(224,178,82,.13),rgba(224,178,82,.02))}
+  .cell.today{border-color:var(--gold);background:linear-gradient(180deg,rgba(184,144,47,.13),rgba(184,144,47,.02))}
   .cell.today .n{color:var(--gold);font-weight:600}
   .cell.sel{outline:2px solid var(--gold-soft);outline-offset:-1px}
   .cell .s0{color:#c97a6d}.cell .s6{color:#8aa3cf}
@@ -114,13 +114,13 @@
   .trow input[type=time]{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-family:'Space Mono',monospace;font-size:15px;outline:none;color-scheme:dark;flex:1;min-width:0}
   .trow input[type=time]:focus{border-color:var(--gold)}
   .atog{display:flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:0 14px;cursor:pointer;font-size:13px;color:var(--text-dim);font-family:'Noto Sans KR';font-weight:500;white-space:nowrap;transition:all .15s}
-  .atog.on{border-color:var(--gold);color:var(--gold);background:rgba(224,178,82,.12)}
+  .atog.on{border-color:var(--gold);color:var(--gold);background:rgba(184,144,47,.12)}
   .orow{display:flex;gap:7px}
   .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:1}
   .seg button{flex:1;background:transparent;border:none;color:var(--text-dim);padding:11px 4px;cursor:pointer;font-family:'Noto Sans KR';font-weight:600;font-size:14px;transition:all .12s}
-  .seg button.on.p-high{background:rgba(224,122,95,.2);color:var(--high)}
-  .seg button.on.p-mid{background:rgba(224,178,82,.2);color:var(--mid)}
-  .seg button.on.p-low{background:rgba(131,160,110,.2);color:var(--low)}
+  .seg button.on.p-high{background:rgba(210,106,63,.2);color:var(--high)}
+  .seg button.on.p-mid{background:rgba(184,144,47,.2);color:var(--mid)}
+  .seg button.on.p-low{background:rgba(90,154,74,.2);color:var(--low)}
   select.cat{background:var(--panel);border:1px solid var(--line);color:var(--text-dim);border-radius:10px;padding:10px;font-family:'Noto Sans KR';font-weight:500;font-size:13.5px;outline:none;cursor:pointer}
   .addbtn{background:var(--gold);color:#1a1408;border:none;border-radius:11px;padding:13px;cursor:pointer;font-family:'Noto Sans KR';font-weight:700;font-size:15px;transition:all .15s}
   .addbtn:active{transform:scale(.98)}
@@ -131,9 +131,9 @@
   .grp-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;font-family:'Noto Sans KR';font-weight:700;font-size:13.5px}
   .grp-head .cnt{font-family:'Space Mono',monospace;font-size:11px;background:var(--panel-2);padding:1px 8px;border-radius:20px}
   .grp-head::after{content:"";flex:1;height:1px;background:var(--line-soft)}
-  .grp-head.over{color:var(--od)}.grp-head.over .cnt{background:rgba(239,93,71,.18);color:var(--od)}
+  .grp-head.over{color:var(--od)}.grp-head.over .cnt{background:rgba(216,84,47,.18);color:var(--od)}
   .grp-head.soon{color:var(--soon)}.grp-head.soon .cnt{background:rgba(110,162,196,.16);color:var(--soon)}
-  .grp-head.done{color:var(--done)}.grp-head.done .cnt{background:rgba(131,160,110,.16);color:var(--done)}
+  .grp-head.done{color:var(--done)}.grp-head.done .cnt{background:rgba(90,154,74,.16);color:var(--done)}
 
   /* timeline */
   .tl-row{display:flex;gap:11px;min-height:42px}
@@ -141,14 +141,14 @@
   .tl-h.now{color:var(--gold);font-weight:700}
   .tl-t{flex:1;border-left:1px solid var(--line-soft);padding:0 0 9px 11px;position:relative;min-width:0}
   .tl-t::before{content:"";position:absolute;left:-4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--line)}
-  .nowline{position:absolute;left:44px;right:0;height:2px;background:var(--gold);z-index:5;box-shadow:0 0 8px rgba(224,178,82,.5)}
+  .nowline{position:absolute;left:44px;right:0;height:2px;background:var(--gold);z-index:5;box-shadow:0 0 8px rgba(184,144,47,.5)}
   .nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
 
   /* item */
   .item{background:var(--panel);border:1px solid var(--line-soft);border-left:3px solid var(--mid);border-radius:10px;padding:10px 11px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;transition:all .15s}
   .item.p-high{border-left-color:var(--high)}.item.p-mid{border-left-color:var(--mid)}.item.p-low{border-left-color:var(--low)}
-  .item.done{opacity:.55}
-  .item.overdue{border-left-color:var(--od);border-color:rgba(239,93,71,.45);background:rgba(239,93,71,.06)}
+  .item.done{background:var(--panel-2)}
+  .item.overdue{border-left-color:var(--od);border-color:rgba(216,84,47,.45);background:rgba(216,84,47,.06)}
   .chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);cursor:pointer;flex-shrink:0;margin-top:1px;display:grid;place-items:center;transition:all .12s}
   .chk.done{background:var(--gold);border-color:var(--gold)}
   .chk.done::after{content:"\2713";color:#1a1408;font-size:13px;font-weight:700}
@@ -183,8 +183,20 @@
   .card-btns button{flex:1;border:none;border-radius:11px;padding:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR';font-size:14px}
   .btn-done{background:var(--gold);color:#1a1408}
   .btn-close{background:var(--panel-2);color:var(--text-dim);border:1px solid var(--line)!important}
+  .btn-del{background:rgba(216,84,47,.14);color:var(--od);border:1px solid rgba(216,84,47,.4)!important}
 
-  .banner{background:rgba(224,122,95,.12);border:1px solid rgba(224,122,95,.4);color:#f0c0b2;font-size:12px;border-radius:10px;padding:10px 13px;margin:0 18px 4px;line-height:1.6}
+  /* 편집 모달 */
+  .item .mn{cursor:pointer}
+  .edit-card{text-align:left;max-width:340px}
+  .edit-title{font-family:'Fraunces',serif;font-size:18px;margin-bottom:14px;color:var(--text)}
+  .edit-input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:11px;padding:11px 13px;font-family:'Noto Sans KR';font-size:15px;outline:none;margin-bottom:9px}
+  .edit-input:focus{border-color:var(--gold)}
+  .edit-row{display:flex;gap:7px;margin-bottom:14px}
+  .edit-row input[type=time]{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-family:'Space Mono',monospace;font-size:15px;outline:none;color-scheme:dark;flex:1;min-width:0}
+  .edit-row input[type=time]:focus{border-color:var(--gold)}
+  .snooze-row.four button{font-size:11.5px;padding:9px 2px}
+
+  .banner{background:rgba(210,106,63,.12);border:1px solid rgba(210,106,63,.4);color:#f0c0b2;font-size:12px;border-radius:10px;padding:10px 13px;margin:0 18px 4px;line-height:1.6}
   .banner b{color:var(--gold)}
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-size:13px;padding:11px 19px;border-radius:11px;z-index:10001;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
   .toast.show{opacity:1}
@@ -195,7 +207,7 @@
 <body>
 <div class="app">
   <div class="hd">
-    <div class="ttl"><span class="eyebrow">Work Planner · v4 · build 0612-1403</span><h1>업무 플래너</h1></div>
+    <div class="ttl"><span class="eyebrow">Work Planner · v6 · build 0612-1448</span><h1>업무 플래너</h1></div>
     <div class="actions">
       <span class="sync-dot" id="syncDot" title="동기화 상태"></span>
       <button class="ibtn" id="syncBtn" title="새로고침">&#8635;</button>
@@ -281,6 +293,27 @@
     </div>
   </div>
 </div>
+<div class="pop" id="editPop">
+  <div class="card edit-card">
+    <div class="edit-title">일정 수정</div>
+    <input type="text" id="editText" class="edit-input" placeholder="일정 내용">
+    <div class="edit-row">
+      <input type="time" id="editTime">
+      <div class="atog" id="editAlarm">&#128276; 알람</div>
+    </div>
+    <div class="snooze-label">미루기</div>
+    <div class="snooze-row four">
+      <button data-em="10">+10분</button>
+      <button data-em="30">+30분</button>
+      <button data-em="60">+1시간</button>
+      <button data-em="tomorrow">내일</button>
+    </div>
+    <div class="card-btns">
+      <button class="btn-del" id="editDelete">삭제</button>
+      <button class="btn-done" id="editSave">저장</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -295,7 +328,7 @@
   const LS_KEY='workplanner:v3';
   let tasks=[], viewYear, viewMonth, selectedKey, activePrio='mid', alarmOn=false, activeTab='status';
   const fired=new Set();
-  let audioCtx=null, alarmTask=null;
+  let audioCtx=null, alarmTask=null, editId=null, editAlarmOn=false;
 
   const $=id=>document.getElementById(id);
   const pad=n=>String(n).padStart(2,'0');
@@ -468,10 +501,49 @@
     document.querySelectorAll('.body [data-id]').forEach(el=>{
       const id=el.dataset.id;
       const tg=el.querySelector('[data-act=toggle]');const dl=el.querySelector('[data-act=del]');
+      const mn=el.querySelector('.mn');
       if(tg)tg.addEventListener('click',()=>toggle(id));
       if(dl)dl.addEventListener('click',()=>del(id));
+      if(mn)mn.addEventListener('click',()=>openEdit(id));
     });
   }
+
+  /* 일정 편집 / 미루기 */
+  function openEdit(id){
+    const t=tasks.find(x=>x.id===id);if(!t)return;
+    editId=id;
+    $('editText').value=t.text;
+    $('editTime').value=t.time||'';
+    editAlarmOn=!!t.alarm;
+    $('editAlarm').classList.toggle('on',editAlarmOn);
+    $('editPop').classList.add('show');
+  }
+  function closeEdit(){$('editPop').classList.remove('show');editId=null;}
+  function saveEdit(){
+    const t=tasks.find(x=>x.id===editId);if(!t)return;
+    const newText=$('editText').value.trim();if(newText)t.text=newText;
+    const newTime=$('editTime').value||'';
+    if(newTime!==t.time){t.notified=false;fired.delete(t.id);}
+    t.time=newTime;
+    t.alarm=editAlarmOn&&!!newTime;
+    t.updated=Date.now();t.pending=true;
+    saveLocal();render();syncItem(t);closeEdit();toast('수정했어요');
+  }
+  function editSnooze(val){
+    const t=tasks.find(x=>x.id===editId);if(!t)return;
+    if(val==='tomorrow'){
+      const d=parseKey(t.date);d.setDate(d.getDate()+1);t.date=keyOf(d);
+    }else{
+      const min=parseInt(val,10);
+      const base=(t.time||nowHHMM()).split(':').map(Number);
+      const dt=new Date();dt.setHours(base[0],base[1]+min,0,0);
+      t.time=pad(dt.getHours())+':'+pad(dt.getMinutes());
+    }
+    t.notified=false;fired.delete(t.id);t.alarm=t.alarm&&!!t.time;t.updated=Date.now();t.pending=true;
+    saveLocal();render();syncItem(t);closeEdit();
+    toast(val==='tomorrow'?'내일로 미뤘어요':(val+'분 뒤 '+t.time+'로 미뤘어요'));
+  }
+  function editDelete(){const id=editId;closeEdit();if(id)del(id);}
 
   function setForm(open){
     const f=$('addForm'),tg=$('addTrigger');
@@ -553,7 +625,12 @@
     $('alarmToggle').onclick=()=>{alarmOn=!alarmOn;$('alarmToggle').classList.toggle('on',alarmOn);if(alarmOn)reqNotif();};
     $('alarmDismiss').onclick=closePop;
     $('alarmDone').onclick=alarmDone;
-    document.querySelectorAll('.snooze-row button').forEach(b=>b.onclick=()=>snooze(parseInt(b.dataset.min,10)));
+    $('editAlarm').onclick=()=>{editAlarmOn=!editAlarmOn;$('editAlarm').classList.toggle('on',editAlarmOn);if(editAlarmOn)reqNotif();};
+    $('editSave').onclick=saveEdit;
+    $('editDelete').onclick=editDelete;
+    document.querySelectorAll('#editPop .snooze-row button').forEach(b=>b.onclick=()=>editSnooze(b.dataset.em));
+    $('editPop').addEventListener('click',e=>{if(e.target===$('editPop'))closeEdit();});
+    document.querySelectorAll('#alarmPop .snooze-row button').forEach(b=>b.onclick=()=>snooze(parseInt(b.dataset.min,10)));
     document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
       activeTab=b.dataset.tab;
       document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
