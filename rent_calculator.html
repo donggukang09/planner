@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>보증금·월세 계산기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F6F2; --surface: #FFFFFF; --surface2: #F0EFE9;
+    --border: rgba(0,0,0,0.09); --border-med: rgba(0,0,0,0.15);
+    --text-primary: #1A1917; --text-secondary: #6B6A66; --text-hint: #A09F9B;
+    --accent: #1D6E4F; --accent-light: #E1F5EE; --accent-dark: #0F4F38;
+    --warn: #854F0B; --warn-light: #FAEEDA;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+    --font: 'Noto Sans KR', sans-serif;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 2rem 1rem 5rem; }
+  .page-wrap { max-width: 720px; margin: 0 auto; }
+
+  header { margin-bottom: 2rem; }
+  header .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  header h1 { font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; }
+  header p { margin-top: 6px; font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* TABS */
+  .tab-bar { display: flex; gap: 4px; background: var(--surface2); border-radius: var(--radius-md); padding: 4px; margin-bottom: 16px; }
+  .tab-btn { flex: 1; padding: 8px; border: none; border-radius: var(--radius-sm); background: transparent; font-family: var(--font); font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; }
+  .tab-btn.active { background: var(--surface); color: var(--accent); font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* CARD */
+  .card { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 14px; }
+  .card-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-hint); margin-bottom: 1.1rem; }
+  .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; }
+  .card-title-row .card-title { margin-bottom: 0; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+  .field .korean-amount { font-size: 12px; color: var(--accent); font-weight: 500; min-height: 17px; }
+
+  input.money-input {
+    width: 100%; height: 38px; padding: 0 12px;
+    border: 0.5px solid var(--border-med); border-radius: var(--radius-sm);
+    background: var(--surface2); color: var(--text-primary);
+    font-family: var(--font); font-size: 14px; font-weight: 500;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  input.money-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); background: var(--surface); }
+
+  input[type="number"] {
+    width: 100%; height: 38px; padding: 0 12px;
+    border: 0.5px solid var(--border-med); border-radius: var(--radius-sm);
+    background: var(--surface2); color: var(--text-primary);
+    font-family: var(--font); font-size: 14px; font-weight: 500;
+    outline: none; transition: border-color .15s;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); background: var(--surface); }
+
+  .rate-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .rate-row label { font-size: 13px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; min-width: 80px; }
+  .rate-row input[type="range"] { flex: 1; height: 4px; appearance: none; -webkit-appearance: none; background: var(--border-med); border-radius: 99px; outline: none; border: none; }
+  .rate-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  .rate-row input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid white; }
+  .rate-row input[type="number"] { width: 72px; }
+  .rate-row .unit { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+
+  /* RESULT */
+  .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 480px) { .result-grid { grid-template-columns: 1fr; } }
+  .metric { background: var(--surface2); border-radius: var(--radius-md); padding: 1rem 1.1rem; }
+  .metric .mlabel { font-size: 11px; font-weight: 500; color: var(--text-hint); letter-spacing: .04em; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+  .metric .mval { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--text-primary); }
+  .metric.highlight { background: var(--accent); grid-column: 1/-1; }
+  .metric.highlight .mlabel { color: rgba(255,255,255,.65); }
+  .metric.highlight .mval { color: #FFF; font-size: 28px; }
+
+  .badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; }
+  .badge.max { background: var(--accent-light); color: var(--accent-dark); }
+  .badge.partial { background: var(--warn-light); color: var(--warn); }
+
+  .formula-strip { background: var(--surface2); border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: .85rem 1.1rem; font-size: 13px; color: var(--text-secondary); line-height: 1.9; }
+  .formula-strip strong { color: var(--text-primary); font-weight: 700; }
+  .formula-strip .sub { font-size: 11px; color: var(--text-hint); }
+
+  /* SAVE ROW */
+  .save-row { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+  .save-row input { flex: 1; height: 38px; padding: 0 12px; border: 0.5px solid var(--border-med); border-radius: var(--radius-sm); background: var(--surface2); font-family: var(--font); font-size: 14px; outline: none; transition: border-color .15s; color: var(--text-primary); }
+  .save-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); background: var(--surface); }
+
+  .btn { height: 38px; padding: 0 18px; border: none; border-radius: var(--radius-sm); font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  .btn:hover { opacity: .85; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #FFF; }
+  .btn-ghost { background: var(--surface2); color: var(--text-secondary); border: 0.5px solid var(--border-med); }
+  .btn-danger { background: #FEE2E2; color: #991B1B; }
+  .btn-sm { height: 30px; font-size: 12px; padding: 0 12px; }
+
+  /* STATUS */
+  .status-bar { font-size: 12px; display: flex; align-items: center; gap: 5px; min-height: 20px; margin-top: 8px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.ok { background: var(--accent); }
+  .status-dot.loading { background: #F59E0B; animation: pulse .8s infinite; }
+  .status-dot.err { background: #EF4444; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* SAVED LIST */
+  .saved-empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-hint); font-size: 14px; line-height: 2; }
+  .saved-item { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: var(--radius-md); padding: 1rem 1.1rem; margin-bottom: 10px; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+  .saved-item:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); border-color: var(--accent); }
+  .saved-item.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(29,110,79,.2); }
+  .saved-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .saved-item-name { font-size: 15px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+  .saved-item-date { font-size: 11px; color: var(--text-hint); }
+  .saved-item-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .saved-chip { background: var(--surface2); border-radius: 99px; padding: 3px 10px; font-size: 12px; color: var(--text-secondary); }
+  .saved-chip.accent { background: var(--accent-light); color: var(--accent-dark); font-weight: 700; }
+  .saved-item-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .chk-box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border-med); background: var(--surface2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .chk-box.checked { background: var(--accent); border-color: var(--accent); }
+  .chk-box.checked::after { content: '✓'; font-size: 11px; color: #FFF; font-weight: 700; }
+
+  /* COMPARE */
+  .compare-hint { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+  .compare-hint span { font-weight: 700; color: var(--accent); }
+  .compare-table-wrap { overflow-x: auto; }
+  table.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.compare-table th, table.compare-table td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); text-align: right; white-space: nowrap; }
+  table.compare-table th:first-child, table.compare-table td:first-child { text-align: left; color: var(--text-secondary); font-weight: 500; }
+  table.compare-table thead th { background: var(--surface2); font-weight: 700; font-size: 12px; }
+  table.compare-table thead th.best { background: var(--accent-light); color: var(--accent-dark); }
+  table.compare-table td.best-val { color: var(--accent); font-weight: 700; }
+  table.compare-table tr:last-child td { border-bottom: none; }
+  .compare-total-row td { font-weight: 700; font-size: 14px; background: var(--surface2); }
+  .compare-total-row td.best-val { background: var(--accent-light); color: var(--accent-dark); }
+
+  /* SKELETON */
+  .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, #E8E6E0 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: var(--radius-sm); height: 72px; margin-bottom: 10px; border-radius: var(--radius-md); }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  footer { text-align: center; font-size: 11px; color: var(--text-hint); margin-top: 2rem; letter-spacing: .04em; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <header>
+    <div class="eyebrow">Housing Calculator</div>
+    <h1>보증금·월세 계산기</h1>
+    <p>대출 이자와 회사 이자 지원금을 반영한 실제 월 납입금을 계산합니다.</p>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('calc')">계산기</button>
+    <button class="tab-btn" onclick="switchTab('saved')">저장 목록</button>
+    <button class="tab-btn" onclick="switchTab('compare')">비교하기</button>
+  </div>
+
+  <!-- ══ TAB: 계산기 ══ -->
+  <div id="tab-calc" class="tab-panel active">
+    <div class="card">
+      <div class="card-title">기본 정보</div>
+      <div class="grid2" style="margin-bottom:14px;">
+        <div class="field">
+          <label>보증금 (원)</label>
+          <input class="money-input" type="text" id="deposit" inputmode="numeric" value="100,000,000" />
+          <span class="korean-amount" id="deposit-kr"></span>
+        </div>
+        <div class="field">
+          <label>월세 (원)</label>
+          <input class="money-input" type="text" id="monthly_rent" inputmode="numeric" value="1,070,000" />
+          <span class="korean-amount" id="monthly_rent-kr"></span>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>대출 비율 (%)</label>
+          <input type="number" id="loan_pct" value="70" step="1" min="0" max="100" />
+          <span class="korean-amount" id="loan_pct_hint" style="color:var(--text-secondary);font-weight:400;"></span>
+        </div>
+        <div class="field">
+          <label>필요 현금 (원)</label>
+          <input class="money-input" type="text" id="needed_cash" readonly style="color:var(--accent);cursor:default;font-weight:700;" />
+          <span class="korean-amount" id="needed_cash-kr"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">대출 조건</div>
+      <div class="rate-row">
+        <label>연이자율</label>
+        <input type="range" id="rate_slider" min="1" max="10" step="0.1" value="3.8" />
+        <input type="number" id="rate_input" value="3.8" step="0.1" min="0.1" max="20" />
+        <span class="unit">% / 년</span>
+      </div>
+      <div class="rate-row">
+        <label>이자 지원 한도</label>
+        <input class="money-input" type="text" id="support_max" inputmode="numeric" value="250,000" style="width:140px;flex:none;" />
+        <span class="unit">원 / 월 (최대)</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">계산 결과</div>
+      <div class="result-grid" id="result-grid"></div>
+      <div class="formula-strip" id="formula-strip"></div>
+      <div class="save-row">
+        <input type="text" id="save-name" placeholder="저장할 이름 (예: 5단지, 현재)" maxlength="20" />
+        <button class="btn btn-primary" id="btn-save" onclick="saveResult()">💾 저장</button>
+      </div>
+      <div class="status-bar" id="save-status"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: 저장 목록 ══ -->
+  <div id="tab-saved" class="tab-panel">
+    <div class="card">
+      <div class="card-title-row">
+        <span class="card-title">저장된 항목</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" onclick="loadSaved()">🔄 새로고침</button>
+          <button class="btn btn-danger btn-sm" onclick="clearAll()">전체 삭제</button>
+        </div>
+      </div>
+      <div class="status-bar" id="list-status" style="margin-bottom:10px;margin-top:0;"></div>
+      <div id="saved-list"></div>
+    </div>
+    <div style="text-align:center;margin-top:4px;">
+      <button class="btn btn-primary" onclick="goCompare()">선택 항목 비교 →</button>
+    </div>
+  </div>
+
+  <!-- ══ TAB: 비교하기 ══ -->
+  <div id="tab-compare" class="tab-panel">
+    <div class="card">
+      <div class="card-title">저장 항목 비교</div>
+      <div id="compare-area"></div>
+    </div>
+  </div>
+
+  <footer>DEVELOPED BY DONGGU KANG</footer>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   ★ 설정 — 배포 후 이 두 줄만 수정하세요 ★
+══════════════════════════════════════════ */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzrBzYwowAuCj5PT44t65H_Fj45edb-uv-C71lVL-tyOPYnIKwqn0-Bcm0uYgDWymkNA/exec';
+const SHEET_ID   = '1XBxfL94QkNBg1W9H14Vejo5D0fgIljH5kQHy2YeDlc8';
+const SHEET_NAME = '저장목록';
+
+/* ══ 유틸 ══ */
+const $ = id => document.getElementById(id);
+function fmt(n) { return Math.round(n).toLocaleString('ko-KR'); }
+
+function toKorean(n) {
+  if (!n || n === 0) return '';
+  const parts = [];
+  const uk = Math.floor(n / 100000000);
+  if (uk > 0) parts.push(uk + '억');
+  const manFull = Math.floor((n % 100000000) / 10000);
+  if (manFull > 0) {
+    let s = '';
+    const mc = Math.floor(manFull / 1000); if (mc) s += mc + '천';
+    const mb = Math.floor((manFull % 1000) / 100); if (mb) s += mb + '백';
+    const ms = Math.floor((manFull % 100) / 10); if (ms) s += ms + '십';
+    const mi = manFull % 10; if (mi) s += mi;
+    parts.push(s + '만');
+  }
+  const rem = n % 10000;
+  if (rem > 0 && uk === 0 && manFull === 0) parts.push(fmt(rem));
+  return parts.join(' ') + '원';
+}
+
+function getRaw(id) { return parseInt($(id).value.replace(/[^0-9]/g, ''), 10) || 0; }
+function updateKorean(id) {
+  const n = getRaw(id);
+  const el = $(id + '-kr');
+  if (el) el.textContent = n > 0 ? toKorean(n) : '';
+}
+
+function setStatus(elId, type, msg) {
+  const el = $(elId); if (!el) return;
+  const color = { ok: 'var(--accent)', loading: '#F59E0B', err: '#EF4444' }[type];
+  el.innerHTML = `<span class="status-dot ${type}"></span><span style="color:${color}">${msg}</span>`;
+}
+
+/* ══ 콤마 입력 ══ */
+['deposit', 'monthly_rent', 'support_max'].forEach(id => {
+  const el = $(id);
+  el.addEventListener('input', () => {
+    const raw = el.value.replace(/[^0-9]/g, '');
+    const formatted = raw ? parseInt(raw, 10).toLocaleString('ko-KR') : '';
+    const pos = el.selectionStart, prev = el.value.length;
+    el.value = formatted;
+    try { el.setSelectionRange(pos + (formatted.length - prev), pos + (formatted.length - prev)); } catch(e) {}
+    updateKorean(id); calc();
+  });
+  el.addEventListener('paste', e => {
+    e.preventDefault();
+    const raw = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+    el.value = raw ? parseInt(raw, 10).toLocaleString('ko-KR') : '';
+    updateKorean(id); calc();
+  });
+  updateKorean(id);
+});
+
+['loan_pct', 'rate_input'].forEach(id => $(id).addEventListener('input', calc));
+$('rate_slider').addEventListener('input', e => { $('rate_input').value = e.target.value; calc(); });
+$('rate_input').addEventListener('input', e => { $('rate_slider').value = e.target.value; calc(); });
+
+/* ══ 계산 ══ */
+let lastResult = null;
+
+function calc() {
+  const deposit    = getRaw('deposit');
+  const rent       = getRaw('monthly_rent');
+  const loanPct    = parseFloat($('loan_pct').value) || 0;
+  const rate       = parseFloat($('rate_input').value) || 0;
+  const supportMax = getRaw('support_max');
+
+  const loan          = deposit * (loanPct / 100);
+  const neededCash    = Math.max(0, deposit - loan);
+  const monthlyInt    = loan * (rate / 100) / 12;
+  const actualSupport = Math.min(monthlyInt, supportMax);
+  const isMax         = monthlyInt >= supportMax;
+  const netInt        = monthlyInt - actualSupport;
+  const total         = rent + netInt;
+
+  $('needed_cash').value = fmt(neededCash);
+  const ncKr = $('needed_cash-kr');
+  if (ncKr) ncKr.textContent = neededCash > 0 ? toKorean(Math.round(neededCash)) : '';
+  $('loan_pct_hint').textContent = `대출금 ${fmt(loan)}원 · ${toKorean(Math.round(loan))}`;
+
+  const badge = isMax
+    ? `<span class="badge max">최대 지원 달성</span>`
+    : `<span class="badge partial">부분 지원 ${Math.round(actualSupport / supportMax * 100)}%</span>`;
+
+  $('result-grid').innerHTML = `
+    <div class="metric">
+      <div class="mlabel">대출금 (보증금 × ${loanPct}%)</div>
+      <div class="mval">${fmt(loan)}원</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">월 이자 (연 ${rate}%)</div>
+      <div class="mval" style="${isMax?'color:var(--accent)':'color:var(--warn)'}">${fmt(monthlyInt)}원</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">이자 지원금 ${badge}</div>
+      <div class="mval" style="color:var(--accent)">${fmt(actualSupport)}원</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">실부담 이자</div>
+      <div class="mval">${fmt(netInt)}원</div>
+    </div>
+    <div class="metric highlight">
+      <div class="mlabel">월 납입금 합계</div>
+      <div class="mval">${fmt(total)}원</div>
+    </div>`;
+
+  $('formula-strip').innerHTML = `
+    <strong>${fmt(rent)}원</strong> (월세)
+    + <strong>${fmt(netInt)}원</strong> (이자 − 지원금)
+    = <strong>${fmt(total)}원 / 월</strong><br/>
+    <span class="sub">월 이자 ${fmt(monthlyInt)}원 − 지원금 ${fmt(actualSupport)}원 = 실부담 이자 ${fmt(netInt)}원 &nbsp;|&nbsp; 지원금 한도 대비 ${Math.round(actualSupport/supportMax*100)}% 활용</span>`;
+
+  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total };
+}
+
+/* ══ 저장 (POST) ══ */
+async function saveResult() {
+  if (!lastResult) return;
+  const name = $('save-name').value.trim();
+  if (!name) { alert('이름을 입력해주세요!'); $('save-name').focus(); return; }
+
+  const btn = $('btn-save');
+  btn.disabled = true;
+  setStatus('save-status', 'loading', '저장 중...');
+
+  const payload = {
+    action: 'save',
+    id: Date.now(),
+    name,
+    ts: new Date().toLocaleString('ko-KR'),
+    ...lastResult
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    $('save-name').value = '';
+    setStatus('save-status', 'ok', `"${name}" 저장 완료!`);
+    btn.textContent = '✓ 저장됨';
+    btn.style.background = 'var(--accent-dark)';
+    setTimeout(() => { btn.innerHTML = '💾 저장'; btn.style.background = ''; btn.disabled = false; }, 2000);
+  } catch(e) {
+    setStatus('save-status', 'err', '저장 실패. Apps Script URL을 확인해주세요.');
+    btn.disabled = false;
+  }
+}
+
+/* ══ 읽기 (gviz) ══ */
+let cachedItems = [];
+
+async function loadSaved() {
+  setStatus('list-status', 'loading', '불러오는 중...');
+  $('saved-list').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`;
+
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&t=${Date.now()}r${Math.random()}`;
+
+  try {
+    const res  = await fetch(url);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
+    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total'];
+    const rows = json.table?.rows || [];
+
+    cachedItems = rows.map(r => {
+      const obj = {};
+      cols.forEach((c, i) => {
+        const v = r.c?.[i]?.v;
+        obj[c] = (typeof v === 'number') ? v : (v ?? '');
+      });
+      return obj;
+    }).filter(x => x.id);
+
+    setStatus('list-status', 'ok', `${cachedItems.length}개 항목`);
+    renderSaved();
+  } catch(e) {
+    setStatus('list-status', 'err', '불러오기 실패. 시트 공유 설정(뷰어 공개)을 확인해주세요.');
+    $('saved-list').innerHTML = '';
+  }
+}
+
+/* ══ 삭제 ══ */
+async function deleteItem(id) {
+  setStatus('list-status', 'loading', '삭제 중...');
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id })
+    });
+    selectedIds.delete(Number(id));
+    await loadSaved();
+  } catch(e) { setStatus('list-status', 'err', '삭제 실패'); }
+}
+
+async function clearAll() {
+  if (!confirm('저장된 항목을 모두 삭제할까요?')) return;
+  setStatus('list-status', 'loading', '전체 삭제 중...');
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'clearAll' })
+    });
+    selectedIds.clear();
+    await loadSaved();
+  } catch(e) { setStatus('list-status', 'err', '삭제 실패'); }
+}
+
+/* ══ 저장 목록 렌더 ══ */
+let selectedIds = new Set();
+
+function toggleSelect(id) {
+  const n = Number(id);
+  selectedIds.has(n) ? selectedIds.delete(n) : selectedIds.add(n);
+  renderSaved();
+}
+
+function renderSaved() {
+  const el = $('saved-list');
+  if (!cachedItems.length) {
+    el.innerHTML = '<div class="saved-empty">저장된 항목이 없습니다.<br/>계산기에서 결과를 저장해보세요!</div>';
+    return;
+  }
+  el.innerHTML = cachedItems.map(item => {
+    const sel = selectedIds.has(Number(item.id));
+    return `
+    <div class="saved-item ${sel?'selected':''}" onclick="toggleSelect(${item.id})">
+      <div class="saved-item-header">
+        <div class="saved-item-name">
+          <div class="chk-box ${sel?'checked':''}"></div>
+          ${item.name}
+        </div>
+        <span class="saved-item-date">${item.ts}</span>
+      </div>
+      <div class="saved-item-row">
+        <span class="saved-chip">보증금 ${toKorean(Number(item.deposit))}</span>
+        <span class="saved-chip">월세 ${fmt(item.rent)}원</span>
+        <span class="saved-chip">대출 ${item.loanPct}%</span>
+        <span class="saved-chip">이자 ${item.rate}%</span>
+        <span class="saved-chip accent">월 납입 ${fmt(item.total)}원</span>
+      </div>
+      <div class="saved-item-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" onclick="loadItem(${item.id})">불러오기</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem(${item.id})">삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadItem(id) {
+  const item = cachedItems.find(x => Number(x.id) === Number(id));
+  if (!item) return;
+  $('deposit').value      = fmt(item.deposit);
+  $('monthly_rent').value = fmt(item.rent);
+  $('loan_pct').value     = item.loanPct;
+  $('rate_input').value   = item.rate;
+  $('rate_slider').value  = item.rate;
+  $('support_max').value  = fmt(item.supportMax);
+  updateKorean('deposit');
+  updateKorean('monthly_rent');
+  updateKorean('support_max');
+  calc();
+  switchTab('calc');
+}
+
+function goCompare() {
+  if (selectedIds.size < 2) { alert('비교할 항목을 2개 이상 선택해주세요.'); return; }
+  renderCompare();
+  switchTab('compare');
+}
+
+/* ══ 비교 렌더 ══ */
+function renderCompare() {
+  const area  = $('compare-area');
+  const items = selectedIds.size > 0
+    ? cachedItems.filter(x => selectedIds.has(Number(x.id)))
+    : cachedItems;
+
+  if (items.length < 2) {
+    area.innerHTML = '<div class="saved-empty">저장 목록에서 항목을 2개 이상 선택 후<br/>비교하기 버튼을 눌러주세요.</div>';
+    return;
+  }
+
+  const minTotal = Math.min(...items.map(x => Number(x.total)));
+  const rows = [
+    { label: '보증금',      key: 'deposit',       f: v => toKorean(Number(v)) },
+    { label: '월세',        key: 'rent',          f: v => fmt(v) + '원' },
+    { label: '대출 비율',   key: 'loanPct',       f: v => v + '%' },
+    { label: '대출금',      key: 'loan',          f: v => toKorean(Math.round(v)) },
+    { label: '필요 현금',   key: 'neededCash',    f: v => toKorean(Math.round(v)) },
+    { label: '연이자율',    key: 'rate',          f: v => v + '%' },
+    { label: '월 이자',     key: 'monthlyInt',    f: v => fmt(v) + '원' },
+    { label: '이자 지원금', key: 'actualSupport', f: v => fmt(v) + '원' },
+    { label: '실부담 이자', key: 'netInt',        f: v => fmt(v) + '원' },
+  ];
+
+  const thCells   = items.map(it => { const b = Number(it.total)===minTotal; return `<th class="${b?'best':''}">${it.name}${b?' 🏆':''}</th>`; }).join('');
+  const bodyRows  = rows.map(r => `<tr><td>${r.label}</td>${items.map(it=>`<td>${r.f(it[r.key])}</td>`).join('')}</tr>`).join('');
+  const totalTds  = items.map(it => { const b = Number(it.total)===minTotal; return `<td class="${b?'best-val':''}">${fmt(it.total)}원</td>`; }).join('');
+
+  area.innerHTML = `
+    <p class="compare-hint">월 납입금 가장 낮은 항목 <span>🏆</span></p>
+    <div class="compare-table-wrap">
+      <table class="compare-table">
+        <thead><tr><th>항목</th>${thCells}</tr></thead>
+        <tbody>
+          ${bodyRows}
+          <tr class="compare-total-row"><td>월 납입금 합계</td>${totalTds}</tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+/* ══ 탭 전환 ══ */
+function switchTab(name) {
+  ['calc','saved','compare'].forEach((n, i) => {
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active', n === name);
+    $('tab-' + n).classList.toggle('active', n === name);
+  });
+  if (name === 'saved') loadSaved();
+  if (name === 'compare') renderCompare();
+}
+
+calc();
+</script>
+</body>
+</html>
