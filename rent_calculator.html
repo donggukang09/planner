@@ -396,7 +396,6 @@ async function saveResult() {
   try {
     await fetch(SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     $('save-name').value = '';
@@ -449,7 +448,6 @@ async function deleteItem(id) {
   try {
     await fetch(SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'delete', id })
     });
     selectedIds.delete(Number(id));
@@ -463,7 +461,6 @@ async function clearAll() {
   try {
     await fetch(SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'clearAll' })
     });
     selectedIds.clear();
