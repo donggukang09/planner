@@ -179,7 +179,7 @@
           <span class="korean-amount" id="monthly_rent-kr"></span>
         </div>
       </div>
-      <div class="grid2">
+      <div class="grid2" style="margin-bottom:14px;">
         <div class="field">
           <label>대출 비율 (%)</label>
           <input type="number" id="loan_pct" value="70" step="1" min="0" max="100" />
@@ -189,6 +189,18 @@
           <label>필요 현금 (원)</label>
           <input class="money-input" type="text" id="needed_cash" readonly style="color:var(--accent);cursor:default;font-weight:700;" />
           <span class="korean-amount" id="needed_cash-kr"></span>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>평수 (평)</label>
+          <input type="number" id="area_py" value="" step="0.1" min="0" placeholder="예: 24.5" style="width:100%;" />
+          <span class="korean-amount" id="area_py_hint" style="color:var(--text-secondary);font-weight:400;"></span>
+        </div>
+        <div class="field">
+          <label>전용면적 (㎡)</label>
+          <input type="number" id="area_m2" value="" step="0.1" min="0" placeholder="예: 59.9" style="width:100%;" />
+          <span class="korean-amount" id="area_m2_hint" style="color:var(--text-secondary);font-weight:400;"></span>
         </div>
       </div>
     </div>
@@ -313,7 +325,7 @@ function setStatus(elId, type, msg) {
   updateKorean(id);
 });
 
-['loan_pct', 'rate_input'].forEach(id => $(id).addEventListener('input', calc));
+['loan_pct', 'rate_input', 'area_py', 'area_m2'].forEach(id => $(id).addEventListener('input', calc));
 $('rate_slider').addEventListener('input', e => { $('rate_input').value = e.target.value; calc(); });
 $('rate_input').addEventListener('input', e => { $('rate_slider').value = e.target.value; calc(); });
 
@@ -372,7 +384,12 @@ function calc() {
     = <strong>${fmt(total)}원 / 월</strong><br/>
     <span class="sub">월 이자 ${fmt(monthlyInt)}원 − 지원금 ${fmt(actualSupport)}원 = 실부담 이자 ${fmt(netInt)}원 &nbsp;|&nbsp; 지원금 한도 대비 ${Math.round(actualSupport/supportMax*100)}% 활용</span>`;
 
-  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total };
+  const areaPy = parseFloat($('area_py').value) || 0;
+  const areaM2 = parseFloat($('area_m2').value) || 0;
+  // 평수↔㎡ 연동
+  $('area_py_hint').textContent = areaPy > 0 ? `약 ${(areaPy * 3.305785).toFixed(1)}㎡` : '';
+  $('area_m2_hint').textContent = areaM2 > 0 ? `약 ${(areaM2 / 3.305785).toFixed(1)}평` : '';
+  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total, areaPy, areaM2 };
 }
 
 /* ══ 저장 (POST) ══ */
@@ -422,7 +439,7 @@ async function loadSaved() {
     const res  = await fetch(url);
     const text = await res.text();
     const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total'];
+    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total','areaPy','areaM2'];
     const rows = json.table?.rows || [];
 
     cachedItems = rows.map(r => {
@@ -499,6 +516,7 @@ function renderSaved() {
         <span class="saved-chip">월세 ${fmt(item.rent)}원</span>
         <span class="saved-chip">대출 ${item.loanPct}%</span>
         <span class="saved-chip">이자 ${item.rate}%</span>
+        ${item.areaPy ? `<span class="saved-chip">${item.areaPy}평 / ${item.areaM2}㎡</span>` : ''}
         <span class="saved-chip accent">월 납입 ${fmt(item.total)}원</span>
       </div>
       <div class="saved-item-actions" onclick="event.stopPropagation()">
@@ -518,6 +536,8 @@ function loadItem(id) {
   $('rate_input').value   = item.rate;
   $('rate_slider').value  = item.rate;
   $('support_max').value  = fmt(item.supportMax);
+  $('area_py').value      = item.areaPy || '';
+  $('area_m2').value      = item.areaM2 || '';
   updateKorean('deposit');
   updateKorean('monthly_rent');
   updateKorean('support_max');
@@ -545,6 +565,7 @@ function renderCompare() {
 
   const minTotal = Math.min(...items.map(x => Number(x.total)));
   const rows = [
+    { label: '평수',        key: 'areaPy',        f: v => v ? `${v}평 (${Number(item.areaM2 || 0)}㎡)` : '-' },
     { label: '보증금',      key: 'deposit',       f: v => toKorean(Number(v)) },
     { label: '월세',        key: 'rent',          f: v => fmt(v) + '원' },
     { label: '대출 비율',   key: 'loanPct',       f: v => v + '%' },
