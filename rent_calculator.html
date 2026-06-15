@@ -191,7 +191,7 @@
           <span class="korean-amount" id="needed_cash-kr"></span>
         </div>
       </div>
-      <div class="grid2">
+      <div class="grid2" style="margin-top:14px;">
         <div class="field">
           <label>평수 (평)</label>
           <input type="number" id="area_py" value="" step="0.1" min="0" placeholder="예: 24.5" style="width:100%;" />
@@ -325,7 +325,7 @@ function setStatus(elId, type, msg) {
   updateKorean(id);
 });
 
-['loan_pct', 'rate_input', 'area_py', 'area_m2'].forEach(id => $(id).addEventListener('input', calc));
+['loan_pct', 'rate_input'].forEach(id => $(id).addEventListener('input', calc));
 $('rate_slider').addEventListener('input', e => { $('rate_input').value = e.target.value; calc(); });
 $('rate_input').addEventListener('input', e => { $('rate_slider').value = e.target.value; calc(); });
 
@@ -384,12 +384,7 @@ function calc() {
     = <strong>${fmt(total)}원 / 월</strong><br/>
     <span class="sub">월 이자 ${fmt(monthlyInt)}원 − 지원금 ${fmt(actualSupport)}원 = 실부담 이자 ${fmt(netInt)}원 &nbsp;|&nbsp; 지원금 한도 대비 ${Math.round(actualSupport/supportMax*100)}% 활용</span>`;
 
-  const areaPy = parseFloat($('area_py').value) || 0;
-  const areaM2 = parseFloat($('area_m2').value) || 0;
-  // 평수↔㎡ 연동
-  $('area_py_hint').textContent = areaPy > 0 ? `약 ${(areaPy * 3.305785).toFixed(1)}㎡` : '';
-  $('area_m2_hint').textContent = areaM2 > 0 ? `약 ${(areaM2 / 3.305785).toFixed(1)}평` : '';
-  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total, areaPy, areaM2 };
+  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total };
 }
 
 /* ══ 저장 (POST) ══ */
@@ -439,7 +434,7 @@ async function loadSaved() {
     const res  = await fetch(url);
     const text = await res.text();
     const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total','areaPy','areaM2'];
+    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total'];
     const rows = json.table?.rows || [];
 
     cachedItems = rows.map(r => {
@@ -467,7 +462,7 @@ async function deleteItem(id) {
       method: 'POST', mode: 'no-cors',
       body: JSON.stringify({ action: 'delete', id })
     });
-    selectedIds.delete(Number(id));
+    selectedIds.delete(String(id));
     await loadSaved();
   } catch(e) { setStatus('list-status', 'err', '삭제 실패'); }
 }
@@ -489,8 +484,8 @@ async function clearAll() {
 let selectedIds = new Set();
 
 function toggleSelect(id) {
-  const n = Number(id);
-  selectedIds.has(n) ? selectedIds.delete(n) : selectedIds.add(n);
+  const s = String(id);
+  selectedIds.has(s) ? selectedIds.delete(s) : selectedIds.add(s);
   renderSaved();
 }
 
@@ -501,9 +496,9 @@ function renderSaved() {
     return;
   }
   el.innerHTML = cachedItems.map(item => {
-    const sel = selectedIds.has(Number(item.id));
+    const sel = selectedIds.has(String(item.id));
     return `
-    <div class="saved-item ${sel?'selected':''}" onclick="toggleSelect(${item.id})">
+    <div class="saved-item ${sel?'selected':''}" onclick="toggleSelect('${item.id}')">
       <div class="saved-item-header">
         <div class="saved-item-name">
           <div class="chk-box ${sel?'checked':''}"></div>
@@ -528,7 +523,7 @@ function renderSaved() {
 }
 
 function loadItem(id) {
-  const item = cachedItems.find(x => Number(x.id) === Number(id));
+  const item = cachedItems.find(x => String(x.id) === String(id));
   if (!item) return;
   $('deposit').value      = fmt(item.deposit);
   $('monthly_rent').value = fmt(item.rent);
@@ -555,7 +550,7 @@ function goCompare() {
 function renderCompare() {
   const area  = $('compare-area');
   const items = selectedIds.size > 0
-    ? cachedItems.filter(x => selectedIds.has(Number(x.id)))
+    ? cachedItems.filter(x => selectedIds.has(String(x.id)))
     : cachedItems;
 
   if (items.length < 2) {
@@ -565,7 +560,8 @@ function renderCompare() {
 
   const minTotal = Math.min(...items.map(x => Number(x.total)));
   const rows = [
-    { label: '평수',        key: 'areaPy',        f: v => v ? `${v}평 (${Number(item.areaM2 || 0)}㎡)` : '-' },
+    { label: '평수',        key: 'areaPy',        f: v => v ? `${v}평` : '-' },
+    { label: '전용면적',    key: 'areaM2',        f: v => v ? `${v}㎡` : '-' },
     { label: '보증금',      key: 'deposit',       f: v => toKorean(Number(v)) },
     { label: '월세',        key: 'rent',          f: v => fmt(v) + '원' },
     { label: '대출 비율',   key: 'loanPct',       f: v => v + '%' },
@@ -577,7 +573,7 @@ function renderCompare() {
     { label: '실부담 이자', key: 'netInt',        f: v => fmt(v) + '원' },
   ];
 
-  const thCells   = items.map(it => { const b = Number(it.total)===minTotal; return `<th class="${b?'best':''}">${it.name}${b?' 🏆':''}</th>`; }).join('');
+  const thCells   = items.map(it => { const b = Number(it.total)===minTotal; return `<th class="${b?'best':''}">${it.name}${it.areaPy ? `<br/><span style="font-weight:400;font-size:11px;">${it.areaPy}평 / ${it.areaM2}㎡</span>` : ''}${b?' 🏆':''}</th>`; }).join('');
   const bodyRows  = rows.map(r => `<tr><td>${r.label}</td>${items.map(it=>`<td>${r.f(it[r.key])}</td>`).join('')}</tr>`).join('');
   const totalTds  = items.map(it => { const b = Number(it.total)===minTotal; return `<td class="${b?'best-val':''}">${fmt(it.total)}원</td>`; }).join('');
 
