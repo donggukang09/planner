@@ -179,7 +179,7 @@
           <span class="korean-amount" id="monthly_rent-kr"></span>
         </div>
       </div>
-      <div class="grid2" style="margin-bottom:14px;">
+      <div class="grid2">
         <div class="field">
           <label>대출 비율 (%)</label>
           <input type="number" id="loan_pct" value="70" step="1" min="0" max="100" />
@@ -189,18 +189,6 @@
           <label>필요 현금 (원)</label>
           <input class="money-input" type="text" id="needed_cash" readonly style="color:var(--accent);cursor:default;font-weight:700;" />
           <span class="korean-amount" id="needed_cash-kr"></span>
-        </div>
-      </div>
-      <div class="grid2" style="margin-top:14px;">
-        <div class="field">
-          <label>평수 (평)</label>
-          <input type="number" id="area_py" value="" step="0.1" min="0" placeholder="예: 24.5" style="width:100%;" />
-          <span class="korean-amount" id="area_py_hint" style="color:var(--text-secondary);font-weight:400;"></span>
-        </div>
-        <div class="field">
-          <label>전용면적 (㎡)</label>
-          <input type="number" id="area_m2" value="" step="0.1" min="0" placeholder="예: 59.9" style="width:100%;" />
-          <span class="korean-amount" id="area_m2_hint" style="color:var(--text-secondary);font-weight:400;"></span>
         </div>
       </div>
     </div>
@@ -428,13 +416,13 @@ async function loadSaved() {
   setStatus('list-status', 'loading', '불러오는 중...');
   $('saved-list').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`;
 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&headers=1&t=${Date.now()}r${Math.random()}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&t=${Date.now()}r${Math.random()}`;
 
   try {
     const res  = await fetch(url);
     const text = await res.text();
     const json = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''));
-    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total'];
+    const cols = ['id','name','ts','deposit','rent','loanPct','rate','supportMax','loan','neededCash','monthlyInt','actualSupport','netInt','total','areaPy','areaM2'];
     const rows = json.table?.rows || [];
 
     cachedItems = rows.map(r => {
