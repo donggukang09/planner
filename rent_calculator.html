@@ -147,17 +147,13 @@
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
   footer { text-align: center; font-size: 11px; color: var(--text-hint); margin-top: 2rem; letter-spacing: .04em; }
-  .parking-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-  .parking-label { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border: 0.5px solid var(--border-med); border-radius: 99px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; background: var(--surface2); user-select: none; }
-  .parking-label.checked { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); }
-  .star-row { display: flex; gap: 4px; margin-top: 4px; }
-  .star-btn { font-size: 26px; background: none; border: none; cursor: pointer; color: #D1CFC9; line-height: 1; padding: 0 2px; transition: color .1s, transform .1s; }
-  .star-btn.on { color: #F59E0B; }
-  .star-btn:hover { transform: scale(1.15); }
-  textarea.memo-ta { width: 100%; min-height: 72px; padding: 10px 12px; border: 0.5px solid var(--border-med); border-radius: var(--radius-sm); background: var(--surface2); font-family: var(--font); font-size: 14px; color: var(--text-primary); outline: none; resize: vertical; transition: border-color .15s; box-sizing: border-box; }
-  textarea.memo-ta:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); background: var(--surface); }
-  input[type="date"] { width: 100%; height: 38px; padding: 0 12px; border: 0.5px solid var(--border-med); border-radius: var(--radius-sm); background: var(--surface2); font-family: var(--font); font-size: 14px; outline: none; color: var(--text-primary); box-sizing: border-box; }
-  input[type="date"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); }
+  .parking-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+  .parking-label{display:flex;align-items:center;gap:6px;padding:7px 16px;border:0.5px solid var(--border-med);border-radius:99px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .15s;background:var(--surface2);user-select:none;}
+  .parking-label.checked{background:var(--accent-light);border-color:var(--accent);color:var(--accent-dark);}
+  .star-row{display:flex;gap:4px;margin-top:4px;}
+  .star-btn{font-size:26px;background:none;border:none;cursor:pointer;color:#D1CFC9;line-height:1;padding:0 2px;transition:color .1s,transform .1s;}
+  .star-btn.on{color:#F59E0B;}
+  .star-btn:hover{transform:scale(1.15);}
 </style>
 </head>
 <body>
@@ -190,7 +186,7 @@
           <span class="korean-amount" id="monthly_rent-kr"></span>
         </div>
       </div>
-      <div class="grid2">
+      <div class="grid2" style="margin-bottom:14px;">
         <div class="field">
           <label>대출 비율 (%)</label>
           <input type="number" id="loan_pct" value="70" step="1" min="0" max="100" />
@@ -202,6 +198,18 @@
           <span class="korean-amount" id="needed_cash-kr"></span>
         </div>
       </div>
+      <div class="grid2">
+        <div class="field">
+          <label>평수 (평)</label>
+          <input type="number" id="area_py" placeholder="예: 24.5" step="0.1" min="0" style="width:100%;" />
+          <span class="korean-amount" id="area_py_hint" style="color:var(--text-secondary);font-weight:400;"></span>
+        </div>
+        <div class="field">
+          <label>전용면적 (㎡)</label>
+          <input type="number" id="area_m2" placeholder="예: 59.9" step="0.1" min="0" style="width:100%;" />
+          <span class="korean-amount" id="area_m2_hint" style="color:var(--text-secondary);font-weight:400;"></span>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -209,11 +217,11 @@
       <div class="grid2" style="margin-bottom:14px;">
         <div class="field">
           <label>층</label>
-          <input type="number" id="floor_input" placeholder="예: 7" min="1" max="99" step="1" />
+          <input type="number" id="floor_input" placeholder="예: 7" min="1" max="99" step="1" style="width:100%;" />
         </div>
         <div class="field">
           <label>입주가능일</label>
-          <input type="date" id="move_in_date" />
+          <input type="date" id="move_in_date" style="width:100%;height:38px;padding:0 12px;border:0.5px solid var(--border-med);border-radius:var(--radius-sm);background:var(--surface2);font-family:var(--font);font-size:14px;outline:none;color:var(--text-primary);box-sizing:border-box;" />
         </div>
       </div>
       <div class="field" style="margin-bottom:14px;">
@@ -236,7 +244,7 @@
       </div>
       <div class="field">
         <label>특이사항</label>
-        <textarea id="memo_input" class="memo-ta" placeholder="메모를 입력하세요..."></textarea>
+        <textarea id="memo_input" style="width:100%;min-height:72px;padding:10px 12px;border:0.5px solid var(--border-med);border-radius:var(--radius-sm);background:var(--surface2);font-family:var(--font);font-size:14px;color:var(--text-primary);outline:none;resize:vertical;box-sizing:border-box;" placeholder="메모를 입력하세요..."></textarea>
       </div>
     </div>
 
@@ -364,19 +372,6 @@ function setStatus(elId, type, msg) {
 $('rate_slider').addEventListener('input', e => { $('rate_input').value = e.target.value; calc(); });
 $('rate_input').addEventListener('input', e => { $('rate_slider').value = e.target.value; calc(); });
 
-function setStars(n) {
-  document.querySelectorAll('.star-btn').forEach(function(b) {
-    b.classList.toggle('on', Number(b.dataset.v) <= n);
-  });
-}
-
-function setPark(el) {
-  document.querySelectorAll('.parking-label').forEach(function(l) { l.classList.remove('checked'); });
-  el.classList.add('checked');
-  var inp = el.querySelector('input');
-  if (inp) inp.checked = true;
-}
-
 /* ══ 계산 ══ */
 let lastResult = null;
 
@@ -432,17 +427,17 @@ function calc() {
     = <strong>${fmt(total)}원 / 월</strong><br/>
     <span class="sub">월 이자 ${fmt(monthlyInt)}원 − 지원금 ${fmt(actualSupport)}원 = 실부담 이자 ${fmt(netInt)}원 &nbsp;|&nbsp; 지원금 한도 대비 ${Math.round(actualSupport/supportMax*100)}% 활용</span>`;
 
-  // 추가 정보 수집
-  const areaPy = parseFloat(($('area_py')||{}).value) || 0;
-  const areaM2 = parseFloat(($('area_m2')||{}).value) || 0;
+  const areaPy = parseFloat(($('area_py')||{value:''}).value) || 0;
+  const areaM2 = parseFloat(($('area_m2')||{value:''}).value) || 0;
+  if ($('area_py_hint')) $('area_py_hint').textContent = areaPy > 0 ? '약 '+(areaPy*3.305785).toFixed(1)+'㎡' : '';
+  if ($('area_m2_hint')) $('area_m2_hint').textContent = areaM2 > 0 ? '약 '+(areaM2/3.305785).toFixed(1)+'평' : '';
   const parkingEl = document.querySelector('input[name="parking"]:checked');
   const parking = parkingEl ? parkingEl.value : '';
-  const floor = (($('floor_input')||{}).value || '').trim();
+  const floor = ($('floor_input') ? $('floor_input').value : '').trim();
   const starsEl = document.querySelector('.star-btn.on:last-of-type');
   const stars = starsEl ? parseInt(starsEl.dataset.v) : 0;
-  const moveInDate = (($('move_in_date')||{}).value || '');
-  const memo = (($('memo_input')||{}).value || '').trim();
-
+  const moveInDate = $('move_in_date') ? $('move_in_date').value : '';
+  const memo = ($('memo_input') ? $('memo_input').value : '').trim();
   lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total, areaPy, areaM2, parking, floor, stars, moveInDate, memo };
 }
 
@@ -562,7 +557,7 @@ function renderSaved() {
       <div class="saved-item-header">
         <div class="saved-item-name">
           <div class="chk-box ${sel?'checked':''}"></div>
-          ${item.name}${starStr ? ' <span style="color:#F59E0B;font-size:13px;">'+starStr+'</span>' : ''}
+          ${item.name}${starStr ? ' <span style="color:#F59E0B;font-size:12px;">'+starStr+'</span>' : ''}
         </div>
         <span class="saved-item-date">${item.ts}</span>
       </div>
@@ -599,9 +594,13 @@ function loadItem(id) {
   if ($('floor_input')) $('floor_input').value = item.floor || '';
   if ($('move_in_date')) $('move_in_date').value = item.moveInDate || '';
   if ($('memo_input')) $('memo_input').value = item.memo || '';
-  document.querySelectorAll('input[name="parking"]').forEach(function(r){ r.checked = r.value === item.parking; });
-  document.querySelectorAll('.parking-label').forEach(function(l){ l.classList.toggle('checked', l.querySelector('input') && l.querySelector('input').value === item.parking); });
-  if (typeof setStars === 'function') setStars(parseInt(item.stars) || 0);
+  document.querySelectorAll('.parking-label').forEach(function(l) {
+    const inp = l.querySelector('input');
+    const match = inp && inp.value === item.parking;
+    l.classList.toggle('checked', match);
+    if (inp) inp.checked = match;
+  });
+  setStars(parseInt(item.stars) || 0);
   updateKorean('deposit');
   updateKorean('monthly_rent');
   updateKorean('support_max');
@@ -636,36 +635,44 @@ function renderCompare() {
     { label: '입주가능일',  key: 'moveInDate',    f: v => v || '-' },
     { label: '집 상태',     key: 'stars',         f: v => { const n=Number(v)||0; return n ? '★'.repeat(n)+'☆'.repeat(5-n) : '-'; } },
     { label: '보증금',      key: 'deposit',       f: v => toKorean(Number(v)) },
-    { label: '월세',        key: 'rent',          f: v => fmt(v) + '원' },
-    { label: '대출 비율',   key: 'loanPct',       f: v => v + '%' },
+    { label: '월세',        key: 'rent',          f: v => fmt(v)+'원' },
+    { label: '대출 비율',   key: 'loanPct',       f: v => v+'%' },
     { label: '대출금',      key: 'loan',          f: v => toKorean(Math.round(v)) },
     { label: '필요 현금',   key: 'neededCash',    f: v => toKorean(Math.round(v)) },
-    { label: '연이자율',    key: 'rate',          f: v => v + '%' },
-    { label: '월 이자',     key: 'monthlyInt',    f: v => fmt(v) + '원' },
-    { label: '이자 지원금', key: 'actualSupport', f: v => fmt(v) + '원' },
-    { label: '실부담 이자', key: 'netInt',        f: v => fmt(v) + '원' },
+    { label: '연이자율',    key: 'rate',          f: v => v+'%' },
+    { label: '월 이자',     key: 'monthlyInt',    f: v => fmt(v)+'원' },
+    { label: '이자 지원금', key: 'actualSupport', f: v => fmt(v)+'원' },
+    { label: '실부담 이자', key: 'netInt',        f: v => fmt(v)+'원' },
     { label: '특이사항',    key: 'memo',          f: v => v || '-' },
   ];
 
   const thCells  = items.map(it => {
     const b = Number(it.total) === minTotal;
-    const sub = it.areaPy ? `<br/><span style="font-weight:400;font-size:11px;">${it.areaPy}평 / ${it.areaM2}㎡</span>` : '';
+    const sub = it.areaPy ? `<br/><span style="font-weight:400;font-size:11px;">${it.areaPy}평/${it.areaM2}㎡</span>` : '';
     return `<th class="${b?'best':''}">${it.name}${sub}${b?' 🏆':''}</th>`;
   }).join('');
   const bodyRows = rows.map(r => `<tr><td>${r.label}</td>${items.map(it=>`<td>${r.f(it[r.key])}</td>`).join('')}</tr>`).join('');
-  const totalTds = items.map(it => { const b = Number(it.total)===minTotal; return `<td class="${b?'best-val':''}">${fmt(it.total)}원</td>`; }).join('');
+  const totalTds = items.map(it => { const b=Number(it.total)===minTotal; return `<td class="${b?'best-val':''}">${fmt(it.total)}원</td>`; }).join('');
 
   area.innerHTML = `
     <p class="compare-hint">월 납입금 가장 낮은 항목 <span>🏆</span></p>
     <div class="compare-table-wrap">
       <table class="compare-table">
         <thead><tr><th>항목</th>${thCells}</tr></thead>
-        <tbody>
-          ${bodyRows}
-          <tr class="compare-total-row"><td>월 납입금 합계</td>${totalTds}</tr>
-        </tbody>
+        <tbody>${bodyRows}<tr class="compare-total-row"><td>월 납입금 합계</td>${totalTds}</tr></tbody>
       </table>
     </div>`;
+}
+
+function setStars(n) {
+  document.querySelectorAll('.star-btn').forEach(function(b) {
+    b.classList.toggle('on', Number(b.dataset.v) <= n);
+  });
+}
+function setPark(el) {
+  document.querySelectorAll('.parking-label').forEach(function(l) { l.classList.remove('checked'); });
+  el.classList.add('checked');
+  var inp = el.querySelector('input'); if (inp) inp.checked = true;
 }
 
 /* ══ 탭 전환 ══ */
