@@ -147,7 +147,6 @@
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
   footer { text-align: center; font-size: 11px; color: var(--text-hint); margin-top: 2rem; letter-spacing: .04em; }
-
   .parking-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
   .parking-label { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border: 0.5px solid var(--border-med); border-radius: 99px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; background: var(--surface2); user-select: none; }
   .parking-label.checked { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); }
@@ -157,7 +156,7 @@
   .star-btn:hover { transform: scale(1.15); }
   textarea.memo-ta { width: 100%; min-height: 72px; padding: 10px 12px; border: 0.5px solid var(--border-med); border-radius: var(--radius-sm); background: var(--surface2); font-family: var(--font); font-size: 14px; color: var(--text-primary); outline: none; resize: vertical; transition: border-color .15s; box-sizing: border-box; }
   textarea.memo-ta:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); background: var(--surface); }
-  input[type="date"] { width: 100%; height: 38px; padding: 0 12px; border: 0.5px solid var(--border-med); border-radius: var(--radius-sm); background: var(--surface2); font-family: var(--font); font-size: 14px; outline: none; color: var(--text-primary); }
+  input[type="date"] { width: 100%; height: 38px; padding: 0 12px; border: 0.5px solid var(--border-med); border-radius: var(--radius-sm); background: var(--surface2); font-family: var(--font); font-size: 14px; outline: none; color: var(--text-primary); box-sizing: border-box; }
   input[type="date"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(29,110,79,.12); }
 </style>
 </head>
@@ -210,7 +209,7 @@
       <div class="grid2" style="margin-bottom:14px;">
         <div class="field">
           <label>층</label>
-          <input type="number" id="floor_input" placeholder="예: 7" min="1" max="99" step="1" style="width:100%;" />
+          <input type="number" id="floor_input" placeholder="예: 7" min="1" max="99" step="1" />
         </div>
         <div class="field">
           <label>입주가능일</label>
@@ -219,7 +218,7 @@
       </div>
       <div class="field" style="margin-bottom:14px;">
         <label>주차장</label>
-        <div class="parking-group" id="parking-group">
+        <div class="parking-group">
           <label class="parking-label" onclick="setPark(this)"><input type="radio" name="parking" value="지상" style="display:none;" />🌳 지상</label>
           <label class="parking-label" onclick="setPark(this)"><input type="radio" name="parking" value="지상+지하" style="display:none;" />🅿️ 지상+지하</label>
           <label class="parking-label" onclick="setPark(this)"><input type="radio" name="parking" value="지하" style="display:none;" />🏢 지하</label>
@@ -227,7 +226,7 @@
       </div>
       <div class="field" style="margin-bottom:14px;">
         <label>집 상태</label>
-        <div class="star-row" id="star-row">
+        <div class="star-row">
           <button class="star-btn" data-v="1" onclick="setStars(1)">★</button>
           <button class="star-btn" data-v="2" onclick="setStars(2)">★</button>
           <button class="star-btn" data-v="3" onclick="setStars(3)">★</button>
@@ -365,7 +364,6 @@ function setStatus(elId, type, msg) {
 $('rate_slider').addEventListener('input', e => { $('rate_input').value = e.target.value; calc(); });
 $('rate_input').addEventListener('input', e => { $('rate_slider').value = e.target.value; calc(); });
 
-
 function setStars(n) {
   document.querySelectorAll('.star-btn').forEach(function(b) {
     b.classList.toggle('on', Number(b.dataset.v) <= n);
@@ -373,9 +371,10 @@ function setStars(n) {
 }
 
 function setPark(el) {
-  document.querySelectorAll('.parking-label').forEach(function(l){ l.classList.remove('checked'); });
+  document.querySelectorAll('.parking-label').forEach(function(l) { l.classList.remove('checked'); });
   el.classList.add('checked');
-  el.querySelector('input').checked = true;
+  var inp = el.querySelector('input');
+  if (inp) inp.checked = true;
 }
 
 /* ══ 계산 ══ */
@@ -433,7 +432,18 @@ function calc() {
     = <strong>${fmt(total)}원 / 월</strong><br/>
     <span class="sub">월 이자 ${fmt(monthlyInt)}원 − 지원금 ${fmt(actualSupport)}원 = 실부담 이자 ${fmt(netInt)}원 &nbsp;|&nbsp; 지원금 한도 대비 ${Math.round(actualSupport/supportMax*100)}% 활용</span>`;
 
-  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total };
+  // 추가 정보 수집
+  const areaPy = parseFloat(($('area_py')||{}).value) || 0;
+  const areaM2 = parseFloat(($('area_m2')||{}).value) || 0;
+  const parkingEl = document.querySelector('input[name="parking"]:checked');
+  const parking = parkingEl ? parkingEl.value : '';
+  const floor = (($('floor_input')||{}).value || '').trim();
+  const starsEl = document.querySelector('.star-btn.on:last-of-type');
+  const stars = starsEl ? parseInt(starsEl.dataset.v) : 0;
+  const moveInDate = (($('move_in_date')||{}).value || '');
+  const memo = (($('memo_input')||{}).value || '').trim();
+
+  lastResult = { deposit, rent, loanPct, rate, supportMax, loan, neededCash, monthlyInt, actualSupport, netInt, total, areaPy, areaM2, parking, floor, stars, moveInDate, memo };
 }
 
 /* ══ 저장 (POST) ══ */
@@ -477,7 +487,7 @@ async function loadSaved() {
   setStatus('list-status', 'loading', '불러오는 중...');
   $('saved-list').innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`;
 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&t=${Date.now()}r${Math.random()}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&headers=1&t=${Date.now()}r${Math.random()}`;
 
   try {
     const res  = await fetch(url);
@@ -511,7 +521,7 @@ async function deleteItem(id) {
       method: 'POST', mode: 'no-cors',
       body: JSON.stringify({ action: 'delete', id })
     });
-    selectedIds.delete(String(id));
+    selectedIds.delete(Number(id));
     await loadSaved();
   } catch(e) { setStatus('list-status', 'err', '삭제 실패'); }
 }
@@ -546,12 +556,13 @@ function renderSaved() {
   }
   el.innerHTML = cachedItems.map(item => {
     const sel = selectedIds.has(String(item.id));
+    const starStr = item.stars ? '★'.repeat(Number(item.stars)) : '';
     return `
     <div class="saved-item ${sel?'selected':''}" onclick="toggleSelect('${item.id}')">
       <div class="saved-item-header">
         <div class="saved-item-name">
           <div class="chk-box ${sel?'checked':''}"></div>
-          ${item.name}
+          ${item.name}${starStr ? ' <span style="color:#F59E0B;font-size:13px;">'+starStr+'</span>' : ''}
         </div>
         <span class="saved-item-date">${item.ts}</span>
       </div>
@@ -559,12 +570,16 @@ function renderSaved() {
         <span class="saved-chip">보증금 ${toKorean(Number(item.deposit))}</span>
         <span class="saved-chip">월세 ${fmt(item.rent)}원</span>
         <span class="saved-chip">대출 ${item.loanPct}%</span>
-        <span class="saved-chip">이자 ${item.rate}%</span>
+        ${item.areaPy ? `<span class="saved-chip">${item.areaPy}평/${item.areaM2}㎡</span>` : ''}
+        ${item.floor ? `<span class="saved-chip">${item.floor}층</span>` : ''}
+        ${item.parking ? `<span class="saved-chip">${item.parking}</span>` : ''}
+        ${item.moveInDate ? `<span class="saved-chip">입주 ${item.moveInDate}</span>` : ''}
         <span class="saved-chip accent">월 납입 ${fmt(item.total)}원</span>
       </div>
+      ${item.memo ? `<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);padding:6px 10px;background:var(--surface2);border-radius:6px;">📝 ${item.memo}</div>` : ''}
       <div class="saved-item-actions" onclick="event.stopPropagation()">
-        <button class="btn btn-ghost btn-sm" onclick="loadItem(${item.id})">불러오기</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem(${item.id})">삭제</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadItem('${item.id}')">불러오기</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">삭제</button>
       </div>
     </div>`;
   }).join('');
@@ -579,6 +594,14 @@ function loadItem(id) {
   $('rate_input').value   = item.rate;
   $('rate_slider').value  = item.rate;
   $('support_max').value  = fmt(item.supportMax);
+  if ($('area_py')) $('area_py').value = item.areaPy || '';
+  if ($('area_m2')) $('area_m2').value = item.areaM2 || '';
+  if ($('floor_input')) $('floor_input').value = item.floor || '';
+  if ($('move_in_date')) $('move_in_date').value = item.moveInDate || '';
+  if ($('memo_input')) $('memo_input').value = item.memo || '';
+  document.querySelectorAll('input[name="parking"]').forEach(function(r){ r.checked = r.value === item.parking; });
+  document.querySelectorAll('.parking-label').forEach(function(l){ l.classList.toggle('checked', l.querySelector('input') && l.querySelector('input').value === item.parking); });
+  if (typeof setStars === 'function') setStars(parseInt(item.stars) || 0);
   updateKorean('deposit');
   updateKorean('monthly_rent');
   updateKorean('support_max');
@@ -606,6 +629,12 @@ function renderCompare() {
 
   const minTotal = Math.min(...items.map(x => Number(x.total)));
   const rows = [
+    { label: '평수',        key: 'areaPy',        f: v => v ? v+'평' : '-' },
+    { label: '전용면적',    key: 'areaM2',        f: v => v ? v+'㎡' : '-' },
+    { label: '층',          key: 'floor',         f: v => v ? v+'층' : '-' },
+    { label: '주차장',      key: 'parking',       f: v => v || '-' },
+    { label: '입주가능일',  key: 'moveInDate',    f: v => v || '-' },
+    { label: '집 상태',     key: 'stars',         f: v => { const n=Number(v)||0; return n ? '★'.repeat(n)+'☆'.repeat(5-n) : '-'; } },
     { label: '보증금',      key: 'deposit',       f: v => toKorean(Number(v)) },
     { label: '월세',        key: 'rent',          f: v => fmt(v) + '원' },
     { label: '대출 비율',   key: 'loanPct',       f: v => v + '%' },
@@ -615,16 +644,16 @@ function renderCompare() {
     { label: '월 이자',     key: 'monthlyInt',    f: v => fmt(v) + '원' },
     { label: '이자 지원금', key: 'actualSupport', f: v => fmt(v) + '원' },
     { label: '실부담 이자', key: 'netInt',        f: v => fmt(v) + '원' },
-    { label: '주차장',      key: 'parking',       f: v => v || '-' },
-    { label: '층',          key: 'floor',         f: v => v ? v + '층' : '-' },
-    { label: '집 상태',     key: 'stars',         f: v => { const n=Number(v)||0; return n ? '★'.repeat(n)+'☆'.repeat(5-n) : '-'; } },
-    { label: '입주가능일',  key: 'moveInDate',    f: v => v || '-' },
     { label: '특이사항',    key: 'memo',          f: v => v || '-' },
   ];
 
-  const thCells   = items.map(function(it){ const b = Number(it.total)===minTotal; const sub = it.areaPy ? '<br/><span style="font-weight:400;font-size:11px;">'+it.areaPy+'평 / '+it.areaM2+'㎡</span>' : ''; return '<th class="'+(b?'best':'')+'">'+it.name+sub+(b?' 🏆':'')+'</th>'; }).join('');
-  const bodyRows  = rows.map(r => `<tr><td>${r.label}</td>${items.map(it=>`<td>${r.f(it[r.key])}</td>`).join('')}</tr>`).join('');
-  const totalTds  = items.map(it => { const b = Number(it.total)===minTotal; return `<td class="${b?'best-val':''}">${fmt(it.total)}원</td>`; }).join('');
+  const thCells  = items.map(it => {
+    const b = Number(it.total) === minTotal;
+    const sub = it.areaPy ? `<br/><span style="font-weight:400;font-size:11px;">${it.areaPy}평 / ${it.areaM2}㎡</span>` : '';
+    return `<th class="${b?'best':''}">${it.name}${sub}${b?' 🏆':''}</th>`;
+  }).join('');
+  const bodyRows = rows.map(r => `<tr><td>${r.label}</td>${items.map(it=>`<td>${r.f(it[r.key])}</td>`).join('')}</tr>`).join('');
+  const totalTds = items.map(it => { const b = Number(it.total)===minTotal; return `<td class="${b?'best-val':''}">${fmt(it.total)}원</td>`; }).join('');
 
   area.innerHTML = `
     <p class="compare-hint">월 납입금 가장 낮은 항목 <span>🏆</span></p>
