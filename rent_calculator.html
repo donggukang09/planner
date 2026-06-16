@@ -451,12 +451,20 @@ async function saveResult() {
   btn.disabled = true;
   setStatus('save-status', 'loading', '저장 중...');
 
+  // 저장 시점에 추가 정보 직접 수집
+  const parkingEl = document.querySelector('input[name="parking"]:checked');
+  const starsEl   = document.querySelector('.star-btn.on:last-of-type');
   const payload = {
     action: 'save',
     id: Date.now(),
     name,
     ts: new Date().toLocaleString('ko-KR'),
-    ...lastResult
+    ...lastResult,
+    parking:    parkingEl ? parkingEl.value : '',
+    floor:      $('floor_input') ? $('floor_input').value.trim() : '',
+    stars:      starsEl ? parseInt(starsEl.dataset.v) : 0,
+    moveInDate: $('move_in_date') ? $('move_in_date').value : '',
+    memo:       $('memo_input') ? $('memo_input').value.trim() : '',
   };
 
   try {
